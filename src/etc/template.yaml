@@ -100,10 +100,13 @@ objects:
           targetPort: http
       selector:
         name: "bison-bank"
+      sessionAffinity: ClientIP
   - apiVersion: v1
     kind: Route
     metadata:
       name: "bison-bank"
+    annotations:
+      haproxy.router.openshift.io/balance: roundrobin
     spec:
       host: bison-bank.openshift.switchbit.io
       to:
