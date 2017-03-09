@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:mysql://mysql:3306/bison?useSSL=false
+    username: bison
+    password: bison
+    driver-class-name: com.mysql.jdbc.Driver
+    validation-query: SELECT 1;
+
+  thymeleaf.mode: LEGACYHTML5
