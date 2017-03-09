@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: "bison-demo-template"
+  name: "bison-bank"
   annotations:
     artifactId: "bison-bank"
     description: "A Bison demo"
