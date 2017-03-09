@@ -1,6 +1,6 @@
 node('maven') {
   stage ('OpenShift Image Build') {
-    openshiftBuild(buildConfig: 'bison-bank')
+    openshiftBuild(buildConfig: 'bison-bank-database')
   }
   stage ('Verify OpenShift Deployment') {
     openshiftVerifyDeployment(deploymentConfig: 'bison-bank')

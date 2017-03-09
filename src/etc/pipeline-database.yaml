@@ -1,12 +1,13 @@
 kind: "BuildConfig"
 apiVersion: "v1"
 metadata:
-  name: "bison-bank-pipeline"
+  name: "bison-bank-pipeline-database"
 spec:
   source:
     type: "Git"
     git:
       uri: "https://github.com/donovanmuller/bison-bank.git"
+      ref: "database"
   triggers:
     - type: "GitHub"
       github:

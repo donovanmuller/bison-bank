@@ -23,6 +23,41 @@ objects:
           kind: DockerImage
           name: codecentric/springboot-maven3-centos
   - apiVersion: v1
+    kind: "BuildConfig"
+    apiVersion: "v1"
+    metadata:
+      name: "bison-bank-pipeline"
+    spec:
+      source:
+        type: "Git"
+        git:
+          uri: "https://github.com/donovanmuller/bison-bank.git"
+      triggers:
+        - type: "GitHub"
+          github:
+            secret: "bison"
+      strategy:
+        type: "JenkinsPipeline"
+        jenkinsPipelineStrategy: {}
+  - apiVersion:
+    kind: "BuildConfig"
+    apiVersion: "v1"
+    metadata:
+      name: "bison-bank-pipeline-database"
+    spec:
+      source:
+        type: "Git"
+        git:
+          uri: "https://github.com/donovanmuller/bison-bank.git"
+          ref: "database"
+      triggers:
+        - type: "GitHub"
+          github:
+            secret: "bison"
+      strategy:
+        type: "JenkinsPipeline"
+        jenkinsPipelineStrategy: {}
+  - apiVersion: v1
     kind: BuildConfig
     metadata:
       name: "bison-bank"
@@ -35,6 +70,30 @@ objects:
         type: Git
         git:
           uri: "https://github.com/donovanmuller/bison-bank.git"
+      strategy:
+        type: "Source"
+        sourceStrategy:
+          from:
+            kind: "ImageStreamTag"
+            name: "springboot-maven3-centos:latest"
+      output:
+        to:
+          kind: ImageStreamTag
+          name: "bison-bank:latest"
+  - apiVersion: v1
+    kind: BuildConfig
+    metadata:
+      name: "bison-bank-database"
+      labels:
+        name: "bison-bank-database"
+    spec:
+      triggers:
+        - type: ConfigChange
+      source:
+        type: Git
+        git:
+          uri: "https://github.com/donovanmuller/bison-bank.git"
+          ref: "database"
       strategy:
         type: "Source"
         sourceStrategy:
