@@ -3,8 +3,8 @@ kind: Template
 metadata:
   name: "bison-demo-template"
   annotations:
-    artifactId: "@project.artifactId@"
-    description: "@project.description@"
+    artifactId: "bison-bank"
+    description: "A Bison demo"
     tags: bison,service
 labels:
    template: bison-demo
@@ -12,199 +12,113 @@ objects:
   - apiVersion: v1
     kind: ImageStream
     metadata:
-      name: "bison-demo-${BUILD_VERSION}"
+      name: "bison-bank"
+  - apiVersion: v1
+    kind: ImageStream
+    metadata:
+      name: "springboot-maven3-centos"
+    spec:
+      tags:
+        - from:
+          kind: DockerImage
+          name: codecentric/springboot-maven3-centos
   - apiVersion: v1
     kind: BuildConfig
     metadata:
-      name: "bison-demo"
+      name: "bison-bank"
       labels:
-        name: "bison-demo"
-        buildVersion: ${BUILD_VERSION}
+        name: "bison-bank"
     spec:
       triggers:
         - type: ConfigChange
       source:
         type: Git
         git:
-          uri: "${GIT_URL}"
-          ref: "${GIT_REF}"
-        contextDir: "src/main/docker"
-        sourceSecret:
-          name: bison-stash-ssh-secret
+          uri: "https://github.com/donovanmuller/bison-bank.git"
       strategy:
-        type: Docker
-        dockerStrategy:
-          env:
-            - name: http_proxy
-              value: "master01.bison.pi.b:3128"
-            - name: https_proxy
-              value: "master01.bison.pi.b:3128"
-            - name: no_proxy
-              value: "nexus.bison.pi.b"
-            - name: bamboo_resultsUrl
-              value: "${BAMBOO_RESULTSURL}"
+        type: "Source"
+        sourceStrategy:
+          from:
+            kind: "ImageStreamTag"
+            name: "springboot-maven3-centos:latest"
       output:
         to:
           kind: ImageStreamTag
-          name: "bison-demo-${BUILD_VERSION}:latest"
-  - apiVersion: v1
-    kind: DeploymentConfig
-    metadata:
-      name: "bison-demo"
-      annotations:
-        gav: "@project.groupId@:@project.artifactId@:${BUILD_VERSION}"
-        commit: "@git.commit.id@"
-        committer: "@git.commit.user.email@"
-        commitMessage: "@git.commit.message.short@"
-        buildNumber: ${BUILD_VERSION}
-        releaseUrl: "${BAMBOO_RESULTSURL}"
-    spec:
-      strategy:
-        type: Rolling
-      triggers:
-        - type: ImageChange
-          imageChangeParams:
-            automatic: true
-            containerNames:
-              - "bison-demo"
-            from:
-              kind: ImageStreamTag
-              name: "bison-demo-${BUILD_VERSION}:latest"
-        - type: ConfigChange
-      replicas: 1
-      selector:
-        name: "bison-demo"
-      template:
-        metadata:
-          labels:
-            name: "bison-demo"
-            buildVersion: ${BUILD_VERSION}
-        spec:
-          containers:
-            - name: "bison-demo"
-              image: "bison-demo-${BUILD_VERSION}"
-              env:
-                - name: VM_MIN_MEM
-                  value: ${VM_MIN_MEM}
-                - name: VM_MAX_MEM
-                  value: ${VM_MAX_MEM}
-                - name: BISON_ENVIRONMENT
-                  value: ${BISON_ENVIRONMENT}
-              ports:
-                - name: http
-                  containerPort: ${SERVER_PORT}
-              args:
-                - "--spring.profiles.active=${SPRING_PROFILE}"
-                - "--server.port=${SERVER_PORT}"
-                - "--spring.cloud.config.label=${CONF_LABEL}"
-              readinessProbe:
-                httpGet:
-                  path: /info
-                  port: ${SERVER_PORT}
-                initialDelaySeconds: 30
-                timeoutSeconds: 5
-              livenessProbe:
-                httpGet:
-                  path: /health
-                  port: ${SERVER_PORT}
-                initialDelaySeconds: 30
-                timeoutSeconds: 5
-              volumeMounts:
-                - name: shared-storage
-                  mountPath: /shared
-          volumes:
-            - name: shared-storage
-              glusterfs:
-                endpoints: glusterfs-cluster
-                path: /apps
-                readOnly: false
-          restartPolicy: Always
-          serviceAccount: bison-app-service
-  - apiVersion: v1
-    kind: Service
-    metadata:
-      labels:
-        name: "bison-demo"
-      name: "bison-demo"
-    spec:
-      template:
-        metadata:
-          labels:
-            name: "bison-demo"
-            app: bison
-      ports:
-        - name: http
-          port: ${SERVER_PORT}
-          targetPort: http
-      selector:
-        name: "bison-demo"
-  - apiVersion: v1
-    kind: Route
-    metadata:
-      name: "bison-demo"
-    spec:
-      template:
-        metadata:
-          labels:
-            name: "bison-demo"
-            app: bison
-      to:
-        kind: Service
-        name: "bison-demo"
-      port:
-        targetPort: http
-parameters:
-  - name: SPRING_PROFILE
-    displayName: Spring active profile
-    description: The Spring profile to run this app with
-    value: "it"
-    required: true
-  - name: SERVER_PORT
-    displayName: HTTP port
-    description: The HTTP port that this service listens on
-    value: "8080"
-    required: true
-  - name: CONF_LABEL
-    displayName: Spring Cloud Config label
-    description: Determines which branch of the configuration branch to use
-    value: "master"
-    required: true
-  - name: GIT_URL
-    displayName: Bitbucket repo URL
-    description: "The URL of the Bitbucket repo for this application. E.g. http://devtools.barclaysafrica.com/stash/scm/bison/bison-xxx.git"
-    required: true
-  - name: GIT_REF
-    displayName: Git branch reference
-    description: The branch of this app to build
-    value: master
-    required: true
-  - name: BUILD_VERSION
-    displayName: CD build version
-    description: Continous Delivery build version as generated by the Bamboo deployment plan
-    required: true
-  - name: BAMBOO_BUILDRESULTKEY
-    displayName: Bamboo build key
-    description: Bamboo build key (BISON-DT-22)
-    required: true
-  - name: BAMBOO_DEPLOY_RELEASE
-    displayName: Bamboo deployment release
-    description: Bamboo deployment release (release-19)
-    required: true
-  - name: BAMBOO_RESULTSURL
-    displayName: Bamboo deployment result URL
-    description: Bamboo deployment result URL
-    required: false
-  - name: VM_MIN_MEM
-    displayName: Java VM min. heap
-    description: Java VM min. heap (-Xms)
-    value: 64m
-    required: false
-  - name: VM_MAX_MEM
-    displayName: Java VM max. heap
-    description: Java VM max. heap (-Xmx)
-    value: 256m
-    required: false
-  - name: BISON_ENVIRONMENT
-    displayName: The BISON environment
-    description: The BISON environment name that maps to the New Relic environment in newrelic.yml
-    required: true
+          name: "bison-bank:latest"
+#  - apiVersion: v1
+#    kind: DeploymentConfig
+#    metadata:
+#      name: "bison-bank"
+#    spec:
+#      strategy:
+#        type: Rolling
+#      triggers:
+#        - type: ImageChange
+#          imageChangeParams:
+#            automatic: true
+#            containerNames:
+#              - "bison-bank"
+#            from:
+#              kind: ImageStreamTag
+#              name: "bison-bank:latest"
+#        - type: ConfigChange
+#      replicas: 1
+#      selector:
+#        name: "bison-bank"
+#      template:
+#        metadata:
+#          labels:
+#            name: "bison-bank"
+#        spec:
+#          containers:
+#            - name: "bison-bank"
+#              image: "bison-bank"
+#              ports:
+#                - name: http
+#                  containerPort: 8080
+#              readinessProbe:
+#                httpGet:
+#                  path: /info
+#                  port: 8080
+#                initialDelaySeconds: 10
+#                timeoutSeconds: 5
+#              livenessProbe:
+#                httpGet:
+#                  path: /health
+#                  port: 8080
+#                initialDelaySeconds: 10
+#                timeoutSeconds: 5
+#          restartPolicy: Always
+#  - apiVersion: v1
+#    kind: Service
+#    metadata:
+#      labels:
+#        name: "bison-bank"
+#      name: "bison-bank"
+#    spec:
+#      template:
+#        metadata:
+#          labels:
+#            name: "bison-bank"
+#            app: bison
+#      ports:
+#        - name: http
+#          port: "8080"
+#          targetPort: http
+#      selector:
+#        name: "bison-bank"
+#  - apiVersion: v1
+#    kind: Route
+#    metadata:
+#      name: "bison-bank"
+#    spec:
+#      template:
+#        metadata:
+#          labels:
+#            name: "bison-bank"
+#            app: bison
+#      to:
+#        kind: Service
+#        name: "bison-bank"
+#      port:
+#        targetPort: http
