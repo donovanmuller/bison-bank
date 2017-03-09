@@ -45,68 +45,61 @@ objects:
         to:
           kind: ImageStreamTag
           name: "bison-bank:latest"
-#  - apiVersion: v1
-#    kind: DeploymentConfig
-#    metadata:
-#      name: "bison-bank"
-#    spec:
-#      strategy:
-#        type: Rolling
-#      triggers:
-#        - type: ImageChange
-#          imageChangeParams:
-#            automatic: true
-#            containerNames:
-#              - "bison-bank"
-#            from:
-#              kind: ImageStreamTag
-#              name: "bison-bank:latest"
-#        - type: ConfigChange
-#      replicas: 1
-#      selector:
-#        name: "bison-bank"
-#      template:
-#        metadata:
-#          labels:
-#            name: "bison-bank"
-#        spec:
-#          containers:
-#            - name: "bison-bank"
-#              image: "bison-bank"
-#              ports:
-#                - name: http
-#                  containerPort: 8080
-#              readinessProbe:
-#                httpGet:
-#                  path: /info
-#                  port: 8080
-#                initialDelaySeconds: 10
-#                timeoutSeconds: 5
-#              livenessProbe:
-#                httpGet:
-#                  path: /health
-#                  port: 8080
-#                initialDelaySeconds: 10
-#                timeoutSeconds: 5
-#          restartPolicy: Always
-#  - apiVersion: v1
-#    kind: Service
-#    metadata:
-#      labels:
-#        name: "bison-bank"
-#      name: "bison-bank"
-#    spec:
-#      template:
-#        metadata:
-#          labels:
-#            name: "bison-bank"
-#            app: bison
-#      ports:
-#        - name: http
-#          port: "8080"
-#          targetPort: http
-#      selector:
-#        name: "bison-bank"
+  - apiVersion: v1
+    kind: DeploymentConfig
+    metadata:
+      name: "bison-bank"
+    spec:
+      strategy:
+        type: Rolling
+      triggers:
+        - type: ImageChange
+          imageChangeParams:
+            automatic: true
+            containerNames:
+              - "bison-bank"
+            from:
+              kind: ImageStreamTag
+              name: "bison-bank:latest"
+        - type: ConfigChange
+      replicas: 1
+      selector:
+        name: "bison-bank"
+      template:
+        metadata:
+          labels:
+            name: "bison-bank"
+        spec:
+          containers:
+            - name: "bison-bank"
+              image: "bison-bank"
+              ports:
+                - name: http
+                  containerPort: 8080
+              readinessProbe:
+                httpGet:
+                  path: /info
+                  port: 8080
+                initialDelaySeconds: 5
+                timeoutSeconds: 5
+              livenessgit Probe:
+                httpGet:
+                  path: /health
+                  port: 8080
+                initialDelaySeconds: 5
+                timeoutSeconds: 5
+          restartPolicy: Always
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: "bison-bank"
+    spec:
+      ports:
+        - name: http
+          port: 8080
+          targetPort: http
+      selector:
+        name: "bison-bank"
 #  - apiVersion: v1
 #    kind: Route
 #    metadata:
