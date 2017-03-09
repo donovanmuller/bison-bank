@@ -1,10 +1,18 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" style="background-color: #B91320 !important;">
 <head>
 	<title>Bison Bank</title>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
+				integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
 </head>
-<body>
-<h1 th:text="'Bison Bank is on ' + ${host}"></h1>
+<body class="container" style="background-color: #B91320 !important;">
+<div class="container" style="margin-top: 60px">
+	<div class="row justify-content-md-center">
+		<object data="logo.svg" type="image/svg+xml" style="height: 200px"></object>
+		<h1 th:text="'Bison Bank is on ' + ${host}" style="margin-top: 60px; color: whitesmoke;"></h1>
+	</div>
+</div>
 </body>
 </html>
