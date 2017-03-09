@@ -1,23 +1,22 @@
 package bison;
 
+import static java.lang.String.format;
 import static java.net.InetAddress.getLocalHost;
 
 import java.net.UnknownHostException;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
-@Controller
+@RestController
 public class Application {
 
-	@RequestMapping("/")
-	public String index(Model model) throws UnknownHostException {
-		model.addAttribute("host", getLocalHost().getHostName());
-		return "index";
+	@GetMapping("/where")
+	String hello() throws UnknownHostException {
+		return format("Bison bank on [%s]", getLocalHost().getHostName());
 	}
 
 	public static void main(String[] args) {
