@@ -100,18 +100,14 @@ objects:
           targetPort: http
       selector:
         name: "bison-bank"
-#  - apiVersion: v1
-#    kind: Route
-#    metadata:
-#      name: "bison-bank"
-#    spec:
-#      template:
-#        metadata:
-#          labels:
-#            name: "bison-bank"
-#            app: bison
-#      to:
-#        kind: Service
-#        name: "bison-bank"
-#      port:
-#        targetPort: http
+  - apiVersion: v1
+    kind: Route
+    metadata:
+      name: "bison-bank"
+    spec:
+      host: bison-bank.openshift.switchbit.io
+      to:
+        kind: Service
+        name: "bison-bank"
+      port:
+        targetPort: http
