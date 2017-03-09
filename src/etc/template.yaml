@@ -19,12 +19,14 @@ objects:
       name: "springboot-maven3-centos"
     spec:
       tags:
-        - from:
-          kind: DockerImage
-          name: codecentric/springboot-maven3-centos
+        - name: latest
+          annotations:
+            openshift.io/imported-from: codecentric/springboot-maven3-centos
+          from:
+            kind: DockerImage
+            name: codecentric/springboot-maven3-centos
   - apiVersion: v1
     kind: "BuildConfig"
-    apiVersion: "v1"
     metadata:
       name: "bison-bank-pipeline"
     spec:
@@ -32,6 +34,7 @@ objects:
         type: "Git"
         git:
           uri: "https://github.com/donovanmuller/bison-bank.git"
+          ref: "basic"
       triggers:
         - type: "GitHub"
           github:
@@ -39,9 +42,8 @@ objects:
       strategy:
         type: "JenkinsPipeline"
         jenkinsPipelineStrategy: {}
-  - apiVersion:
+  - apiVersion: v1
     kind: "BuildConfig"
-    apiVersion: "v1"
     metadata:
       name: "bison-bank-pipeline-database"
     spec:
@@ -70,6 +72,7 @@ objects:
         type: Git
         git:
           uri: "https://github.com/donovanmuller/bison-bank.git"
+          ref: "basic"
       strategy:
         type: "Source"
         sourceStrategy:

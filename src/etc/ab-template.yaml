@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: "bison-bank-ab"
+  annotations:
+    artifactId: "bison-bank-ab"
+    description: "A Bison demo for A/B testing"
+    tags: bison,service
+labels:
+   template: bison-demo
+objects:
+  - apiVersion: v1
+    kind: ImageStream
+    metadata:
+      name: "bison-bank-ab"
+  - apiVersion: v1
+    kind: "BuildConfig"
+    metadata:
+      name: "bison-bank-ab-pipeline"
+    spec:
+      source:
+        type: "Git"
+        git:
+          uri: "https://github.com/donovanmuller/bison-bank.git"
+          ref: "ab-testing"
+      triggers:
+        - type: "GitHub"
+          github:
+            secret: "bison"
+      strategy:
+        type: "JenkinsPipeline"
+        jenkinsPipelineStrategy: {}
+  - apiVersion: v1
+    kind: BuildConfig
+    metadata:
+      name: "bison-bank-ab"
+      labels:
+        name: "bison-bank-ab"
+    spec:
+      triggers:
+        - type: ConfigChange
+      source:
+        type: Git
+        git:
+          uri: "https://github.com/donovanmuller/bison-bank.git"
+          ref: "ab-testing"
+      strategy:
+        type: "Source"
+        sourceStrategy:
+          from:
+            kind: "ImageStreamTag"
+            name: "springboot-maven3-centos:latest"
+      output:
+        to:
+          kind: ImageStreamTag
+          name: "bison-bank-ab:latest"
+  - apiVersion: v1
+    kind: DeploymentConfig
+    metadata:
+      name: "bison-bank-ab"
+    spec:
+      strategy:
+        type: Rolling
+      triggers:
+        - type: ImageChange
+          imageChangeParams:
+            automatic: true
+            containerNames:
+              - "bison-bank-ab"
+            from:
+              kind: ImageStreamTag
+              name: "bison-bank-ab:latest"
+        - type: ConfigChange
+      replicas: 1
+      selector:
+        name: "bison-bank-ab"
+      template:
+        metadata:
+          labels:
+            name: "bison-bank-ab"
+        spec:
+          containers:
+            - name: "bison-bank-ab"
+              image: "bison-bank-ab"
+              ports:
+                - name: http
+                  containerPort: 8080
+              readinessProbe:
+                httpGet:
+                  path: /info
+                  port: 8080
+                initialDelaySeconds: 5
+                timeoutSeconds: 5
+              livenessgit Probe:
+                httpGet:
+                  path: /health
+                  port: 8080
+                initialDelaySeconds: 5
+                timeoutSeconds: 5
+          restartPolicy: Always
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: "bison-bank-ab"
+    spec:
+      ports:
+        - name: http
+          port: 8080
+          targetPort: http
+      selector:
+        name: "bison-bank-ab"
+      sessionAffinity: ClientIP
