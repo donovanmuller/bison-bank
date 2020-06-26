@@ -1,3 +1,3 @@
 # Bison Bank
 
-A Bison demo project
+A Bison demo Spring Boot project
